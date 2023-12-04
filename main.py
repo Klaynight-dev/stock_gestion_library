@@ -24,6 +24,10 @@ class AddBookDialog(QDialog):
         self.entry_author.setPlaceholderText("Auteur")
         self.layout.addWidget(self.entry_author)
 
+        self.entry_publisher = QLineEdit()  # Champ pour la maison d'édition
+        self.entry_publisher.setPlaceholderText("Maison d'édition")
+        self.layout.addWidget(self.entry_publisher)
+
         self.entry_isbn = QLineEdit()
         self.entry_isbn.setPlaceholderText("ISBN")
         self.layout.addWidget(self.entry_isbn)
@@ -35,7 +39,7 @@ class AddBookDialog(QDialog):
         buttons_layout = QHBoxLayout()
 
         self.btn_add = QPushButton("Ajouter")
-        self.btn_add.clicked.connect(self.add_book_to_list(self.key))
+        self.btn_add.clicked.connect(self.add_book_to_list)
         buttons_layout.addWidget(self.btn_add)
 
         self.btn_cancel = QPushButton("Annuler")
@@ -50,32 +54,125 @@ class AddBookDialog(QDialog):
 #         self.secondary_books_table.setHeaderLabels(["Titre", "Auteur", "ISBN", "Exemplaires"])
 #         self.layout.addWidget(self.secondary_books_table)
         
-        
-    def add_book_to_list(self, key):
-        book_id = None
-        title = self.entry_title.text()
-        author = self.entry_author.text() 
-        isbn = self.entry_isbn.text()
-        copies = self.entry_copies.text()
+    
+    def add_book_to_list(self):
+        if self.library_app.library.books:  # Vérifier si des livres existent déjà
+            last_book = max(self.library_app.library.books, key=lambda x: x.book_id)  # Trouver le livre avec le plus grand ID
+            new_book_id = last_book.book_id + 1  # Incrémenter l'ID pour le nouveau livre
+        else:
+            new_book_id = 1  # Si la bibliothèque est vide, commencer par l'ID 1
 
-        if title and author and isbn and copies:
-            new_book = Book(int(book_id), title, author, isbn, int(copies))
+        title = self.entry_title.text()
+        author = self.entry_author.text()
+        publisher = self.entry_publisher.text()
+        isbn = self.entry_isbn.text()
+        total_copies = self.entry_copies.text()
+        available_copies = total_copies
+
+        if title and author and publisher and isbn and total_copies:
+            new_book = Book(
+                new_book_id,  # Utiliser le nouvel ID unique
+                title,
+                author,
+                publisher,
+                isbn,
+                int(total_copies),
+                int(available_copies)
+            )
+
             self.library_app.library.add(new_book)
             books = self.library_app.library.display_books()
             self.library_app.update_book_table(books)
 
+            # Effacer les champs après l'ajout du livre
             self.entry_title.clear()
             self.entry_author.clear()
+            self.entry_publisher.clear()
             self.entry_isbn.clear()
             self.entry_copies.clear()
+
 
 class LibraryApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Gestion de bibliothèque")
+        self.setWindowTitle("Jobi - Gestion de bibliothèque")
         self.setGeometry(100, 100, 800, 500)
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
+        
+        # Appliquer des styles CSS à certains composants
+        self.setStyleSheet("""
+            /* Styles pour la fenêtre principale */
+            QMainWindow {
+                background-color: #f0f0f0;
+            }
+            
+            /* Styles pour les labels */
+            QLabel {
+                font-size: 16px;
+                font-weight: bold;
+                color: #333333;
+            }
+            
+            /* Styles pour les QLineEdit (zones de texte) */
+            QLineEdit {
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #cccccc;
+                background-color: #ffffff;
+            }
+            
+            /* Styles pour les QPushButton (boutons) */
+            QPushButton {
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                color: #ffffff;
+                background-color: #3498db;
+                border: none;
+                border-radius: 5px;
+            }
+            
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            
+            /* Styles pour les QTreeWidget (tableaux) */
+            QTreeWidget {
+                background-color: #ffffff;
+                border: 1px solid #cccccc;
+                border-radius: 5px;
+            }
+            
+            QTreeWidget::item {
+                padding: 5px;
+            }
+            
+            QTreeWidget::item:selected {
+                background-color: #3498db;
+                color: #ffffff;
+            }
+            
+            QTreeWidget::item:hover {
+                background-color: #2875a8;
+            }
+            
+            /* Styles pour la zone de recherche (QLineEdit) */
+            QLineEdit#entry_search {
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #cccccc;
+                background-color: #ffffff;
+            }
+            
+            /* Styles pour le menu déroulant (QComboBox) */
+            QComboBox#search_combobox {
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #cccccc;
+                background-color: #ffffff;
+            }
+        """)
 
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
@@ -84,14 +181,12 @@ class LibraryApp(QMainWindow):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         # Définir l'icône de l'application dans la barre des tâches
-        app_icon = QIcon(os.path.join(current_dir, 'logo.png'))  # Assurez-vous que 'icon.png' est dans le même répertoire que votre script
-        self.setWindowIcon(app_icon)
+        self.setWindowIcon(QIcon('icon.png'))
         
         # Afficher le logo dans la bannière
-        logo_label = QLabel(self)
-        pixmap = QPixmap(os.path.join(current_dir, 'logo.png'))  # Assurez-vous que 'logo.png' est dans le même répertoire que votre script
-        logo_label.setPixmap(pixmap)
-        logo_label.setGeometry(10, 10, 200, 100)  # Définissez les dimensions et l'emplacement du logo
+        self.logo_label = QLabel(self)
+        self.pixmap = QPixmap(os.path.join(current_dir, 'logo.png'))  # Assurez-vous que 'logo.png' est dans le même répertoire que votre script
+        self.logo_label.setPixmap(self.pixmap)
         
         self.library = Library()
         self.setup_search_section()
@@ -103,19 +198,24 @@ class LibraryApp(QMainWindow):
         dialog = AddBookDialog(self)
         dialog.library_app = self
         dialog.exec_()
+
         
     def setup_search_section(self):
         search_layout = QHBoxLayout()
 
         self.search_label = QLabel("Recherche:")
         self.entry_search = QLineEdit()
+        self.entry_search.setObjectName("entry_search")
+
         self.entry_search.textChanged.connect(self.search_books)
         search_layout.addWidget(self.search_label)
         search_layout.addWidget(self.entry_search)
 
         self.search_type_label = QLabel("Type :")
         self.search_combobox = QComboBox()
-        search_options = ["Titre", "Auteur", "ISBN", "Exemplaires"]#, "ID"]
+        self.search_combobox.setObjectName("search_combobox")
+
+        search_options = ["Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Diponibles"]#, "ID"]
         self.search_combobox.addItems(search_options)
         self.search_combobox.currentIndexChanged.connect(self.search_books)
         search_layout.addWidget(self.search_type_label)
@@ -126,7 +226,7 @@ class LibraryApp(QMainWindow):
     def setup_book_table(self):
         self.book_table = QTreeWidget()
         self.book_table.setColumnCount(5)  # Ajouter une colonne pour l'ID unique
-        self.book_table.setHeaderLabels(["ID", "Titre", "Auteur", "ISBN", "Exemplaires disponibles"])
+        self.book_table.setHeaderLabels(["ID", "Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Diponibles"])
         header = self.book_table.header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         self.layout.addWidget(self.book_table)
@@ -217,9 +317,11 @@ class LibraryApp(QMainWindow):
             item.setText(0, str(book.book_id))
             item.setText(1, book.title)
             item.setText(2, book.author)
-            item.setText(3, book.isbn)
-            item.setText(4, str(book.available_copies))
-
+            item.setText(3, str(book.publisher))
+            item.setText(4, book.isbn)
+            item.setText(5, str(book.total_copies))
+            item.setText(6, str(book.available_copies))
+            
     def take_book(self):
         book_id = self.entry_take.text()
         success, message = self.library.take_book_by_id(book_id)
@@ -263,7 +365,7 @@ class LibraryApp(QMainWindow):
             try:
                 with open(file_path, 'w', newline='', encoding='utf-8') as file:
                     writer = csv.writer(file)
-                    writer.writerow(['Titre', 'Auteur', 'ISBN', 'Exemplaires disponibles'])
+                    writer.writerow(['Title', 'Author', 'Publisher', 'ISBN', 'Total Copies'])
                     for book in self.library.display_books():
                         writer.writerow([book.title, book.author, book.isbn, book.available_copies])
                 QMessageBox.information(self, "Exportation réussie", "Les données ont été exportées avec succès vers un fichier CSV.")
