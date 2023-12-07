@@ -4,9 +4,44 @@ import os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout,
     QHBoxLayout, QWidget, QComboBox, QMessageBox, QFileDialog, QTreeWidget,
-    QTreeWidgetItem, QTableWidgetItem, QHeaderView, QDialog)
+    QTreeWidgetItem, QTableWidgetItem, QHeaderView, QDialog, QAbstractItemView, QMenu, QCheckBox, QInputDialog)
 from PyQt5.QtGui import (QPixmap, QIcon)
+from PyQt5.QtCore import Qt, QSettings
 from library_logic import *
+
+def load_stylesheet(file_path):
+    with open(file_path, 'r') as file:
+        return file.read()
+
+class ConfirmationDialog(QDialog):
+    def __init__(self, message, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Confirmation de suppression")
+        self.resize(300, 150)
+
+        layout = QVBoxLayout()
+        
+        # Définir l'icône de l'application dans la barre des tâches
+        self.setWindowIcon(QIcon('icon.png'))
+        
+        # Afficher le logo dans la bannière
+        self.logo_label = QLabel(self)
+        self.pixmap = QPixmap(os.path.join(current_dir, 'logo.png'))  # Assurez-vous que 'logo.png' est dans le même répertoire que votre script
+        self.logo_label.setPixmap(self.pixmap)
+
+        self.message_label = QLabel(message)
+        layout.addWidget(self.message_label)
+
+        self.never_show_checkbox = QCheckBox("Ne plus afficher")
+        layout.addWidget(self.never_show_checkbox)
+
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.accept)
+        layout.addWidget(self.ok_button)
+        
+        self.setStyleSheet(load_stylesheet('content\css\style_confirmeDialog.css'))
+
+        self.setLayout(layout)
 
 class AddBookDialog(QDialog):
     def __init__(self, parent=None):
@@ -51,7 +86,7 @@ class AddBookDialog(QDialog):
         
 #         self.secondary_books_table = QTreeWidget()
 #         self.secondary_books_table.setColumnCount(4)
-#         self.secondary_books_table.setHeaderLabels(["Titre", "Auteur", "ISBN", "Exemplaires"])
+#         self.secondary_books_table.setHeaderLabels(["ID", "Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Diponibles"])
 #         self.layout.addWidget(self.secondary_books_table)
         
     
@@ -101,78 +136,7 @@ class LibraryApp(QMainWindow):
         self.setCentralWidget(self.central_widget)
         
         # Appliquer des styles CSS à certains composants
-        self.setStyleSheet("""
-            /* Styles pour la fenêtre principale */
-            QMainWindow {
-                background-color: #f0f0f0;
-            }
-            
-            /* Styles pour les labels */
-            QLabel {
-                font-size: 16px;
-                font-weight: bold;
-                color: #333333;
-            }
-            
-            /* Styles pour les QLineEdit (zones de texte) */
-            QLineEdit {
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #cccccc;
-                background-color: #ffffff;
-            }
-            
-            /* Styles pour les QPushButton (boutons) */
-            QPushButton {
-                padding: 10px 20px;
-                font-size: 14px;
-                font-weight: bold;
-                color: #ffffff;
-                background-color: #3498db;
-                border: none;
-                border-radius: 5px;
-            }
-            
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            
-            /* Styles pour les QTreeWidget (tableaux) */
-            QTreeWidget {
-                background-color: #ffffff;
-                border: 1px solid #cccccc;
-                border-radius: 5px;
-            }
-            
-            QTreeWidget::item {
-                padding: 5px;
-            }
-            
-            QTreeWidget::item:selected {
-                background-color: #3498db;
-                color: #ffffff;
-            }
-            
-            QTreeWidget::item:hover {
-                background-color: #2875a8;
-            }
-            
-            /* Styles pour la zone de recherche (QLineEdit) */
-            QLineEdit#entry_search {
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #cccccc;
-                background-color: #ffffff;
-            }
-            
-            /* Styles pour le menu déroulant (QComboBox) */
-            QComboBox#search_combobox {
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #cccccc;
-                background-color: #ffffff;
-            }
-        """)
+        self.setStyleSheet(load_stylesheet('content\css\style.css'))
 
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
@@ -187,6 +151,8 @@ class LibraryApp(QMainWindow):
         self.logo_label = QLabel(self)
         self.pixmap = QPixmap(os.path.join(current_dir, 'logo.png'))  # Assurez-vous que 'logo.png' est dans le même répertoire que votre script
         self.logo_label.setPixmap(self.pixmap)
+        
+        self.settings = QSettings("Jobi", "gestion_library_app")
         
         self.library = Library()
         self.setup_search_section()
@@ -225,13 +191,24 @@ class LibraryApp(QMainWindow):
 
     def setup_book_table(self):
         self.book_table = QTreeWidget()
-        self.book_table.setColumnCount(5)  # Ajouter une colonne pour l'ID unique
-        self.book_table.setHeaderLabels(["ID", "Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Diponibles"])
+        self.book_table.setColumnCount(7)  # Il y a 7 colonnes dans votre cas
+        self.book_table.setHeaderLabels(["ID", "Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Disponibles"])
         header = self.book_table.header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         self.layout.addWidget(self.book_table)
 
-
+        # Rendre tous les éléments éditables dans le tableau
+        self.book_table.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
+        
+         # Activer la détection du clic droit pour le menu contextuel
+        self.book_table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.book_table.customContextMenuRequested.connect(self.show_context_menu)
+        
+        # Détection du double-clic sur l'en-tête de colonne pour le renommage
+        header = self.book_table.header()
+        header.sectionDoubleClicked.connect(self.rename_column)
+        
+        
     def setup_borrow_return_remove_sections(self):
         borrow_return_layout = QHBoxLayout()
 
@@ -266,7 +243,6 @@ class LibraryApp(QMainWindow):
 
     def setup_import_export_buttons(self):
         self.import_export_layout = QHBoxLayout()
-        print("Setting up import/export buttons...")
 
         self.btn_import = QPushButton("Importer depuis CSV")
         self.btn_import.clicked.connect(self.import_from_csv)
@@ -282,30 +258,45 @@ class LibraryApp(QMainWindow):
 
         self.layout.addLayout(self.import_export_layout)
         self.layout.update()
-        print(self.import_export_layout.count())
-
-
+        
     # Ajoute cette méthode dans AddBookDialog
     def set_library_app_reference(self, library_app):
         self.library_app = library_app
 
+    
+    # Fonction pour afficher le menu contextuel lors du clic droit
+    def show_context_menu(self, pos):
+        menu = QMenu(self)
+        copy_action = menu.addAction("Copier")
+        delete_action = menu.addAction("Supprimer")
+        modify_action = menu.addAction("Modifier")
 
-    def search_books(self):
-        query = self.entry_search.text()
-        search_type = self.search_combobox.currentText()
-
-        if search_type == "ISBN":
-            books = self.library.display_books(query=query, by_isbn=True)
-        elif search_type == "Titre":
-            books = self.library.display_books(query=query, by_title=True)
-        elif search_type == "Auteur":
-            books = self.library.display_books(query=query, by_author=True)
-        elif search_type == "Exemplaires":
-            books = self.library.display_books(query=query, by_copies=True)
-        else:
-            books = self.library.display_books(query=query)
-
-        self.update_book_table(books)
+        action = menu.exec_(self.book_table.mapToGlobal(pos))
+        if action == copy_action:
+            selected_item = self.book_table.currentItem()
+            if selected_item is not None:
+                clipboard = QApplication.clipboard()
+                clipboard.setText(selected_item.text(self.book_table.currentColumn()))
+        elif action == modify_action:
+            selected_item = self.book_table.currentItem()
+            if selected_item is not None:
+                self.edit_cell(selected_item)
+        elif action == delete_action:
+            selected_item = self.book_table.currentItem()
+            if selected_item is not None:
+                # Vérifie si la case à cocher "Ne plus afficher" est déjà cochée
+                never_show_checked = self.settings.value("NeverShowConfirmation", False, type=bool)
+                if not never_show_checked:
+                    confirmation_dialog = ConfirmationDialog("Êtes-vous sûr de vouloir supprimer cet élément ?")
+                    result = confirmation_dialog.exec_()
+                    if result == QDialog.Accepted:
+                        should_hide_dialog = confirmation_dialog.never_show_checkbox.isChecked()
+                        if should_hide_dialog:
+                            self.settings.setValue("NeverShowConfirmation", True)  # Enregistrer le choix utilisateur
+                        self.delete_selected_item()  # Appel à la fonction de suppression
+                        confirmation_dialog.deleteLater()  # Supprimer la boîte de dialogue après utilisation
+                else:
+                    self.delete_selected_item()  # Si "Ne plus afficher" est déjà coché, supprime directement l'élément
 
     def update_book_table(self, books=None):
         self.book_table.clear()
@@ -321,7 +312,11 @@ class LibraryApp(QMainWindow):
             item.setText(4, book.isbn)
             item.setText(5, str(book.total_copies))
             item.setText(6, str(book.available_copies))
-            
+
+            # Rendre tous les éléments de cet item éditables
+            for column in range(self.book_table.columnCount()):
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
+
     def take_book(self):
         book_id = self.entry_take.text()
         success, message = self.library.take_book_by_id(book_id)
@@ -371,6 +366,39 @@ class LibraryApp(QMainWindow):
                 QMessageBox.information(self, "Exportation réussie", "Les données ont été exportées avec succès vers un fichier CSV.")
             except Exception as e:
                 QMessageBox.critical(self, "Erreur d'exportation", f"Une erreur est survenue lors de l'exportation : {str(e)}")
+    # Fonction pour éditer une cellule lors du double-clic
+    def edit_cell(self, item):
+        current_column = self.book_table.currentColumn()
+        self.book_table.editItem(item, current_column)
+
+        
+    def rename_column(self, column):
+        new_name, ok = QInputDialog.getText(self, "Renommer la colonne", f"Entrez un nouveau nom pour la colonne {column + 1}")
+        if ok and new_name:
+            self.book_table.headerItem().setText(column, new_name)
+            
+    def delete_selected_item(self):
+        selected_item = self.book_table.currentItem()
+        if selected_item is not None:
+            self.book_table.takeTopLevelItem(self.book_table.indexOfTopLevelItem(selected_item))
+
+
+    def search_books(self):
+        query = self.entry_search.text()
+        search_type = self.search_combobox.currentText()
+
+        if search_type == "ISBN":
+            books = self.library.display_books(query=query, by_isbn=True)
+        elif search_type == "Titre":
+            books = self.library.display_books(query=query, by_title=True)
+        elif search_type == "Auteur":
+            books = self.library.display_books(query=query, by_author=True)
+        elif search_type == "Exemplaires":
+            books = self.library.display_books(query=query, by_copies=True)
+        else:
+            books = self.library.display_books(query=query)
+
+        self.update_book_table(books)
 
 
 def main():

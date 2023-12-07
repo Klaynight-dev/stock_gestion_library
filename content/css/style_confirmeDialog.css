@@ -1,0 +1,32 @@
+/* Styles pour la fenêtre de confirmation */
+QDialog {
+    background-color: #ffffff; /* Couleur de fond */
+    font-family: Arial, sans-serif; /* Police de caractères */
+}
+
+/* Styles pour le label de message */
+QLabel {
+    font-size: 14px; /* Taille de la police */
+    color: #333333; /* Couleur du texte */
+}
+
+/* Styles pour la case à cocher */
+QCheckBox {
+    font-size: 12px; /* Taille de la police */
+    color: #666666; /* Couleur du texte */
+}
+
+/* Styles pour le bouton OK */
+QPushButton {
+    padding: 8px 16px; /* Espacement interne */
+    font-size: 14px; /* Taille de la police */
+    font-weight: bold; /* Gras */
+    color: #ffffff; /* Couleur du texte */
+    background-color: #3498db; /* Couleur de fond */
+    border: none; /* Pas de bordure */
+    border-radius: 5px; /* Coins arrondis */
+}
+
+QPushButton:hover {
+    background-color: #2980b9; /* Couleur de fond au survol */
+}
