@@ -12,16 +12,11 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout,
     QHBoxLayout, QWidget, QComboBox, QMessageBox, QFileDialog, QTreeWidget,
     QTreeWidgetItem, QTableWidgetItem, QHeaderView, QDialog, QAbstractItemView, QMenu, QCheckBox, QInputDialog)
-<<<<<<< Updated upstream
-from PyQt5.QtGui import (QPixmap, QIcon)
-from PyQt5.QtCore import Qt, QSettings
-=======
 log_action(f"Importation de la biblioteque 'PyQt5.QtWidgets' avec comme fonction 'QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout,QHBoxLayout, QWidget, QComboBox, QMessageBox, QFileDialog, QTreeWidget,QTreeWidgetItem, QTableWidgetItem, QHeaderView, QDialog, QAbstractItemView, QMenu, QCheckBox, QInputDialog'", success=True)
 from PyQt5.QtGui import (QPixmap, QIcon)
 log_action(f"Importation de la biblioteque 'PyQt5.QtGui' avec comme fonction 'QPixmap, QIcon'", success=True)
 from PyQt5.QtCore import Qt, QSettings
 log_action(f"Importation de la biblioteque 'PyQt5.QtCore' avec comme fonction 'Qt, QSettings'", success=True)
->>>>>>> Stashed changes
 from library_logic import *
 log_action(f"Importation du fichier 'library_logic.py'", success=True)
 
@@ -39,40 +34,6 @@ class ConfirmationDialog(QDialog):
         
         # Définir l'icône de l'application dans la barre des tâches
         self.setWindowIcon(QIcon('icon.png'))
-
-        self.message_label = QLabel(message)
-        layout.addWidget(self.message_label)
-
-        self.never_show_checkbox = QCheckBox("Ne plus afficher")
-        layout.addWidget(self.never_show_checkbox)
-
-        self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.accept)
-        layout.addWidget(self.ok_button)
-        
-        self.setStyleSheet(load_stylesheet('content\css\style_confirmeDialog.css'))
-
-        self.setLayout(layout)
-
-def load_stylesheet(file_path):
-    with open(file_path, 'r') as file:
-        return file.read()
-
-class ConfirmationDialog(QDialog):
-    def __init__(self, message, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Confirmation de suppression")
-        self.resize(300, 150)
-
-        layout = QVBoxLayout()
-        
-        # Définir l'icône de l'application dans la barre des tâches
-        self.setWindowIcon(QIcon('icon.png'))
-        
-        # Afficher le logo dans la bannière
-        self.logo_label = QLabel(self)
-        self.pixmap = QPixmap(os.path.join(current_dir, 'logo.png'))  # Assurez-vous que 'logo.png' est dans le même répertoire que votre script
-        self.logo_label.setPixmap(self.pixmap)
 
         self.message_label = QLabel(message)
         layout.addWidget(self.message_label)
@@ -161,7 +122,7 @@ class AddBookDialog(QDialog):
             )
 
             self.library_app.library.add(new_book)
-#             log_action(f"Ajout d'un livre : ID={new_book_id}, Titre='{title}', Auteur='{author}', ISBN='{isbn}'", success=True)
+            log_action(f"Ajout d'un livre : ID={new_book_id}, Titre='{title}', Auteur='{author}', ISBN='{isbn}'", success=True)
             books = self.library_app.library.display_books()
             self.library_app.update_book_table(books)
 
@@ -249,11 +210,7 @@ class LibraryApp(QMainWindow):
         # Rendre tous les éléments éditables dans le tableau
         self.book_table.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         
-<<<<<<< Updated upstream
-         # Activer la détection du clic droit pour le menu contextuel
-=======
         # Activer la détection du clic droit pour le menu contextuel
->>>>>>> Stashed changes
         self.book_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.book_table.customContextMenuRequested.connect(self.show_context_menu)
         
@@ -323,8 +280,6 @@ class LibraryApp(QMainWindow):
         copy_action = menu.addAction("Copier")
         delete_action = menu.addAction("Supprimer")
         modify_action = menu.addAction("Modifier")
-<<<<<<< Updated upstream
-=======
 
         action = menu.exec_(self.book_table.mapToGlobal(pos))
         if action == copy_action:
@@ -508,120 +463,6 @@ class LibraryApp(QMainWindow):
         if selected_item is not None:
             self.book_table.takeTopLevelItem(self.book_table.indexOfTopLevelItem(selected_item))
 
->>>>>>> Stashed changes
-
-        action = menu.exec_(self.book_table.mapToGlobal(pos))
-        if action == copy_action:
-            selected_item = self.book_table.currentItem()
-            if selected_item is not None:
-                clipboard = QApplication.clipboard()
-                clipboard.setText(selected_item.text(self.book_table.currentColumn()))
-        elif action == modify_action:
-            selected_item = self.book_table.currentItem()
-            if selected_item is not None:
-                self.edit_cell(selected_item)
-        elif action == delete_action:
-            selected_item = self.book_table.currentItem()
-            if selected_item is not None:
-                # Vérifie si la case à cocher "Ne plus afficher" est déjà cochée
-                never_show_checked = self.settings.value("NeverShowConfirmation", False, type=bool)
-                if not never_show_checked:
-                    confirmation_dialog = ConfirmationDialog("Êtes-vous sûr de vouloir supprimer cet élément ?")
-                    result = confirmation_dialog.exec_()
-                    if result == QDialog.Accepted:
-                        should_hide_dialog = confirmation_dialog.never_show_checkbox.isChecked()
-                        if should_hide_dialog:
-                            self.settings.setValue("NeverShowConfirmation", True)  # Enregistrer le choix utilisateur
-                        self.delete_selected_item()  # Appel à la fonction de suppression
-                        confirmation_dialog.deleteLater()  # Supprimer la boîte de dialogue après utilisation
-                else:
-                    self.delete_selected_item()  # Si "Ne plus afficher" est déjà coché, supprime directement l'élément
-
-<<<<<<< Updated upstream
-    def update_book_table(self, books=None):
-        self.book_table.clear()
-        if not books:
-            books = self.library.display_books()
-
-        for book in books:
-            item = QTreeWidgetItem(self.book_table)
-            item.setText(0, str(book.book_id))
-            item.setText(1, book.title)
-            item.setText(2, book.author)
-            item.setText(3, str(book.publisher))
-            item.setText(4, book.isbn)
-            item.setText(5, str(book.total_copies))
-            item.setText(6, str(book.available_copies))
-
-            # Rendre tous les éléments de cet item éditables
-            for column in range(self.book_table.columnCount()):
-                item.setFlags(item.flags() | Qt.ItemIsEditable)
-
-    def take_book(self):
-        book_id = self.entry_take.text()
-        success, message = self.library.take_book_by_id(book_id)
-        if success:
-            QMessageBox.information(self, "Emprunt", message)
-            self.update_book_table()
-        else:
-            QMessageBox.warning(self, "Emprunt impossible", message)
-
-    def return_book(self):
-        book_id = self.entry_return.text()
-        success, message = self.library.return_book_by_id(book_id)
-        if success:
-            QMessageBox.information(self, "Retour", message)
-            self.update_book_table()
-        else:
-            QMessageBox.warning(self, "Retour impossible", message)
-
-    def remove_book(self):
-        book_id = self.entry_remove.text()
-        success, message = self.library.remove_book_by_id(book_id)
-        if success:
-            QMessageBox.information(self, "Suppression", message)
-            self.update_book_table()
-        else:
-            QMessageBox.warning(self, "Suppression impossible", message)
-
-    def import_from_csv(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Sélectionner un fichier CSV", "", "CSV Files (*.csv)")
-        if file_path:
-            success = self.library.import_from_csv(file_path)
-            if success:
-                QMessageBox.information(self, "Importation réussie", "Les livres ont été importés avec succès depuis le fichier CSV.")
-                self.update_book_table()
-            else:
-                QMessageBox.critical(self, "Erreur d'importation", "Une erreur est survenue lors de l'importation depuis le fichier CSV.")
-                
-    def export_to_csv(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Enregistrer le fichier CSV", "", "CSV Files (*.csv)")
-        if file_path:
-            try:
-                with open(file_path, 'w', newline='', encoding='utf-8') as file:
-                    writer = csv.writer(file)
-                    writer.writerow(['Title', 'Author', 'Publisher', 'ISBN', 'Total Copies'])
-                    for book in self.library.display_books():
-                        writer.writerow([book.title, book.author, book.isbn, book.available_copies])
-                QMessageBox.information(self, "Exportation réussie", "Les données ont été exportées avec succès vers un fichier CSV.")
-            except Exception as e:
-                QMessageBox.critical(self, "Erreur d'exportation", f"Une erreur est survenue lors de l'exportation : {str(e)}")
-    # Fonction pour éditer une cellule lors du double-clic
-    def edit_cell(self, item):
-        current_column = self.book_table.currentColumn()
-        self.book_table.editItem(item, current_column)
-
-        
-    def rename_column(self, column):
-        new_name, ok = QInputDialog.getText(self, "Renommer la colonne", f"Entrez un nouveau nom pour la colonne {column + 1}")
-        if ok and new_name:
-            self.book_table.headerItem().setText(column, new_name)
-            
-    def delete_selected_item(self):
-        selected_item = self.book_table.currentItem()
-        if selected_item is not None:
-            self.book_table.takeTopLevelItem(self.book_table.indexOfTopLevelItem(selected_item))
-
 
     def search_books(self):
         query = self.entry_search.text()
@@ -640,8 +481,6 @@ class LibraryApp(QMainWindow):
 
         self.update_book_table(books)
 
-=======
->>>>>>> Stashed changes
 
 def main():
     app = QApplication(sys.argv)
