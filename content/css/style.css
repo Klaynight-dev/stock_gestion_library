@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 /* Styles pour la fenêtre principale */
 QMainWindow {
     background-color: #f0f0f0;
@@ -76,3 +77,83 @@ QTreeWidget QAbstractItemView QLineEdit {
     background-color: #ffffff;
 
 }
+=======
+/* Styles pour la fenêtre principale */
+QMainWindow {
+    background-color: #f0f0f0;
+}
+
+/* Styles pour les labels */
+QLabel {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333333;
+}
+
+/* Styles pour les QLineEdit (zones de texte) */
+QLineEdit {
+    padding: 1px;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+}
+
+/* Styles pour les QPushButton (boutons) */
+QPushButton {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #3498db;
+    border: none;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    background-color: #2980b9;
+}
+
+/* Styles pour les QTreeWidget (tableaux) */
+QTreeWidget {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+}
+
+QTreeWidget::item {
+    padding: 5px;
+}
+
+QTreeWidget::item:selected {
+    background-color: #3498db;
+    color: #ffffff;
+}
+
+QTreeWidget::item:hover {
+    background-color: #2875a8;
+}
+
+/* Styles pour la zone de recherche (QLineEdit) */
+QLineEdit#entry_search {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+}
+
+/* Styles pour le menu déroulant (QComboBox) */
+QComboBox#search_combobox {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+}
+
+/* Styles pour les cellules en mode édition */
+QTreeWidget QAbstractItemView QLineEdit {
+    padding: 2px; /* Ajustez le padding pour l'édition des cellules */
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+
+}
+>>>>>>> Stashed changes

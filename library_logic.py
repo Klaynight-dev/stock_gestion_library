@@ -2,6 +2,7 @@
 
 import csv
 import uuid  # Importer le module uuid
+from logs import *
 
 class Book:
     def __init__(self, book_id, title, author, publisher, isbn, total_copies, available_copies):
@@ -20,6 +21,7 @@ class Library:
 
     def add(self, book):
         self.books.append(book)
+        log_action(f"Ajout d'un livre : ID={book.book_id}, Titre='{book.title}', Auteur='{book.author}', ISBN='{book.isbn}'", success=True)
     
     def add_multiple(self, books_to_add):
         self.books.extend(books_to_add)
@@ -29,9 +31,12 @@ class Library:
             if int(book.book_id) == int(book_id):
                 if book.available_copies > 0:
                     book.available_copies -= 1
+                    log_action("Vous avez emprunté '{book.title}'")
                     return True, f"Vous avez emprunté '{book.title}'"
                 else:
+                    log_action(f"Plus de copies disponibles pour '{book.title}'")
                     return False, f"Plus de copies disponibles pour '{book.title}'"
+        log_action("Livre non trouvé")
         return False, "Livre non trouvé"
 
     def return_book_by_id(self, book_id):
@@ -43,14 +48,25 @@ class Library:
                 else:
                     return False, f"Toutes les copies de '{book.title}' sont déjà retournées"
         return False, "Livre non trouvé"
-
+    
     def remove_book_by_id(self, book_id):
         for book in self.books:
             if int(book.book_id) == int(book_id):
                 self.books.remove(book)
+                log_action(f"Suppression d'un livre : ID={book.book_id}, Titre='{book.title}', Auteur='{book.author}', ISBN='{book.isbn}'", success=True)
                 return True, f"Le livre '{book.title}' a été supprimé de la bibliothèque"
+        log_action(f"Tentative de suppression d'un livre avec l'ID='{book_id}'", success=False)
         return False, "Livre non trouvé"
+    
+        # Méthode pour mettre à jour les détails d'un livre
+    def update_book_details(self, book):
+        for index, existing_book in enumerate(self.books):
+            if existing_book.book_id == book.book_id:
+                self.books[index] = book  # Mettre à jour les détails du livre dans la liste
+                log_action(f"Mise à jour des détails du livre : ID={book.book_id}, Titre='{book.title}', Auteur='{book.author}', ISBN='{book.isbn}'", success=True)
+                break  # Sortir de la boucle une fois le livre mis à jour
 
+    # Méthode pour afficher les livres en fonction de différents critères de recherche
     def display_books(self, query=None, by_isbn=False, by_author=False, by_title=False, by_copies=False, by_publisher=False):
         if query:
             filtered_books = []
@@ -65,12 +81,7 @@ class Library:
         else:
             return self.books
 
-    
-    def generate_primary_key(self):
-        unique_id = self.primary_key_counter
-        self.primary_key_counter += 1  # Incrémenter le compteur pour chaque nouvel identifiant
-        return unique_id
-    
+    # Méthode pour importer des livres à partir d'un fichier CSV
     def import_from_csv(self, file_path):
         try:
             with open(file_path, newline='', encoding='utf-8') as file:
@@ -90,15 +101,21 @@ class Library:
                         int(row['Total Copies'])  # Disponibilité initiale égale au nombre total de copies
                     )
                     books_to_add.append(book)
+                    log_action(f"Ajout d'un livre : ID={max_book_id}, Titre='{row['Title']}', Auteur='{row['Author']}', Publisher='{row['Publisher']}', ISBN='{row['ISBN']}', max_copies='{int(row['Total Copies'])}', copie_dispo='{int(row['Total Copies'])}'", success=True)
 
                 self.add_multiple(books_to_add)
+                # Enregistrement de l'action dans les logs
+                log_action(f"Importation réussie à partir de {file_path}", success=True)
                 return True  # Indiquer que l'importation s'est déroulée avec succès
         except Exception as e:
+            log_action(f"Erreur lors de l'importation depuis {file_path}: {str(e)}", success=False)
             print(f"Erreur lors de l'importation : {str(e)}")
             return False
 
-    
-    def open_add_book_dialog(self):
-        dialog = AddBookDialog(self)
-        dialog.set_library_app_reference(self)  # Définir la référence à l'instance de LibraryApp
-        dialog.exec_()
+    # Méthode pour obtenir un livre par son ID
+    def get_book_by_id(self, book_id):
+        for book in self.books:
+            if book.book_id == book_id:
+                return book
+        log_action(f"Aucun livre trouvé avec l'ID={book_id}", success=False)
+        return None  # Si aucun livre correspondant à l'ID n'est trouvé
