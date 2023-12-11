@@ -1,6 +1,7 @@
 # main.py
 
 from logs import *
+create_log_directory()
 log_action(f"Importation du fichier 'logs.py'", success=True)
 import sys
 log_action(f"Importation de la biblioteque 'sys'", success=True)
@@ -137,7 +138,7 @@ class AddBookDialog(QDialog):
 class LibraryApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Jobi - Gestion de bibliothèque")
+        self.setWindowTitle("Jobi  -  Gestionnaire de bibliothèque")
         self.setGeometry(100, 100, 800, 500)
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -150,6 +151,8 @@ class LibraryApp(QMainWindow):
         
         # Déterminer le chemin du répertoire actuel
         current_dir = os.path.dirname(os.path.realpath(__file__))
+        
+        self.file_path = None
 
         # Définir l'icône de l'application dans la barre des tâches
         self.setWindowIcon(QIcon('icon.png'))
@@ -169,6 +172,28 @@ class LibraryApp(QMainWindow):
         
         # Connecter la modification de la cellule au signal correspondant
         self.book_table.itemChanged.connect(self.update_book_info)
+        
+    def closeEvent(self, event):
+        # Sauvegarde du fichier CSV avant de fermer l'application
+        log_action("Fermeture de l'application. Tentative de sauvegarde...")
+        if self.file_path:
+            try:
+                save_directory = os.path.join("data", "save")
+                os.makedirs(save_directory, exist_ok=True)  # Création du répertoire de sauvegarde s'il n'existe pas
+                save_path = os.path.join(save_directory, "saved_books.csv")
+                shutil.copyfile(self.file_path, save_path)
+            except Exception as e:
+                log_action(f"Erreur lors de la sauvegarde du fichier : {str(e)}", False, str(e))
+
+    def load_saved_csv(self):
+        # Chargement du fichier CSV sauvegardé s'il existe
+        saved_file_path = os.path.join("data", "save", "saved_books.csv")
+        if os.path.exists(saved_file_path):
+            self.file_path = saved_file_path
+            self.library.import_from_csv(saved_file_path)
+            self.update_book_table()
+        else:
+            log_action("Aucun fichier sauvegardé trouvé.", False)
 
     def open_add_book_dialog(self):
         dialog = AddBookDialog(self)
@@ -403,15 +428,24 @@ class LibraryApp(QMainWindow):
         selected_item = self.book_table.currentItem()
         if selected_item is not None:
             book_id = selected_item.text(0)
-            self.library.remove_book_by_id(book_id)  # Supprimer l'élément dans la bibliothèque
-            self.book_table.takeTopLevelItem(self.book_table.indexOfTopLevelItem(selected_item))  # Supprimer visuellement dans le tableau
-
+            # Utilisez la fonction remove_book_by_id de la bibliothèque pour supprimer l'élément
+            success, message = self.library.remove_book_by_id(book_id)
+            if success:
+                # Enregistrement de l'action dans les logs
+                log_action(f"Suppression d'un livre avec l'ID={book_id}", success=True)
+                QMessageBox.information(self, "Suppression", message)
+                self.update_book_table()  # Mettre à jour l'interface utilisateur après la suppression
+            else:
+                # Enregistrement de l'erreur dans les logs
+                log_action(f"Erreur lors de la suppression d'un livre avec l'ID={book_id}: {message}", success=False)
+                QMessageBox.warning(self, "Suppression impossible", message)
 
     def import_from_csv(self):
         new_book_id = None  # Initialisation de new_book_id en dehors du bloc try
 
         try:
             file_path, _ = QFileDialog.getOpenFileName(self, "Sélectionner un fichier CSV", "", "CSV Files (*.csv)")
+            self.setWindowTitle(f"Jobi  -  {file_path}")
             if file_path:
                 success = self.library.import_from_csv(file_path)
                 if success:
@@ -457,11 +491,6 @@ class LibraryApp(QMainWindow):
         new_name, ok = QInputDialog.getText(self, "Renommer la colonne", f"Entrez un nouveau nom pour la colonne {column + 1}")
         if ok and new_name:
             self.book_table.headerItem().setText(column, new_name)
-            
-    def delete_selected_item(self):
-        selected_item = self.book_table.currentItem()
-        if selected_item is not None:
-            self.book_table.takeTopLevelItem(self.book_table.indexOfTopLevelItem(selected_item))
 
 
     def search_books(self):
@@ -491,6 +520,7 @@ def main():
     os.environ["QT_SCALE_FACTOR"] = "1"  # Définir le facteur d'échelle global pour l'application
     
     window = LibraryApp()
+    window.load_saved_csv()  # Chargement du fichier CSV sauvegardé
     window.show()
     sys.exit(app.exec_())
 
