@@ -25,7 +25,7 @@ Jobi est une application Python développée avec le framework PyQt5, offrant un
   - Enregistrement des actions, des erreurs, et des événements importants pour référence
 
 ## Comment Utiliser
-1. Cloner le dépôt : `git clone https://github.com/votre-nom/jobi-systeme-gestion-bibliotheque.git`
+1. Cloner le dépôt : `git clone https://github.com/Klaynight-dev/stock_gestion_library.git`
 2. Installer les dépendances : `pip install -r requirements.txt`
 3. Exécuter l'application : `python main.py`
 
