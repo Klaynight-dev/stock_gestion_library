@@ -98,9 +98,6 @@ class LibraryApp(QMainWindow):
         # Set up stretch factors to prioritize the content in the layout
         self.layout.addWidget(self.tab_widget, stretch=1)
 
-        # Add the borrow/return/remove sections directly to the main layout
-        self.layout.addStretch(1)
-
         # Load saved CSV data
         self.load_saved_csv()
 
@@ -272,6 +269,10 @@ class LibraryApp(QMainWindow):
         self.btn_import = QPushButton("Importer depuis CSV")
         self.btn_import.clicked.connect(self.import_from_csv)
         self.import_export_layout.addWidget(self.btn_import)
+        
+#         self.current = QPushButton("onglet")
+#         self.current.clicked.connect(self.currentonglet)
+#         self.import_export_layout.addWidget(self.current)
 
         self.btn_export = QPushButton("Exporter vers CSV")
         self.btn_export.clicked.connect(self.export_to_csv)
@@ -287,7 +288,9 @@ class LibraryApp(QMainWindow):
     # Ajoute cette méthode dans AddBookDialog
     def set_library_app_reference(self, library_app):
         self.library_app = library_app
-
+    
+#     def currentonglet(self):
+#         print(self.tab_widget.currentIndex())
     
     # Fonction pour afficher le menu contextuel lors du clic droit
     def show_context_menu(self, pos):
@@ -397,42 +400,57 @@ class LibraryApp(QMainWindow):
 
     def take_book(self):
         book_id = self.entry_take.text()
-        success, message = self.library.take_book_by_id(book_id)
-        if success:
-            # Enregistrement de l'action dans les logs
-            log_action(f"Emprunt d'un livre avec l'ID={book_id}", success=True)
-            QMessageBox.information(self, "Emprunt", message)
-            self.update_book_table()
+        if book_id=='':
+            log_action("Aucune ID de livre n'a été défini !", success=False, error_message="ID non défini")
+            QMessageBox.warning(self, "ID non défini", "Aucune ID de livre n'a été défini !")
+            
         else:
-            # Enregistrement de l'erreur dans les logs
-            log_action(f"Erreur lors de l'emprunt d'un livre avec l'ID={book_id}: {str(e)}", success=False)
-            QMessageBox.warning(self, "Emprunt impossible", message)
-
+            success, message = self.library.take_book_by_id(book_id)
+            if success:
+                # Enregistrement de l'action dans les logs
+                log_action(f"Emprunt d'un livre avec l'ID={book_id}", success=True)
+                QMessageBox.information(self, "Emprunt", message)
+                self.update_book_table()
+            else:
+                # Enregistrement de l'erreur dans les logs
+                log_action(f"Erreur lors de l'emprunt d'un livre avec l'ID={book_id}: {str(message)}", success=False)
+                QMessageBox.warning(self, "Emprunt impossible", message)
+    
     def return_book(self):
         book_id = self.entry_return.text()
-        success, message = self.library.return_book_by_id(book_id)
-        if success:
-            # Enregistrement de l'action dans les logs
-            log_action(f"Retour d'un livre avec l'ID={book_id}", success=True)
-            QMessageBox.information(self, "Retour", message)
-            self.update_book_table()
+        if book_id=='':
+            log_action("Aucune ID de livre n'a été défini !", success=False, error_message="ID non défini")
+            QMessageBox.warning(self, "ID non défini", "Aucune ID de livre n'a été défini !")
+            
         else:
-            # Enregistrement de l'erreur dans les logs
-            log_action(f"Erreur lors du retour d'un livre avec l'ID={book_id}: {str(e)}", success=False)
-            QMessageBox.warning(self, "Retour impossible", message)
+            success, message = self.library.return_book_by_id(book_id)
+            if success:
+                # Enregistrement de l'action dans les logs
+                log_action(f"Retour d'un livre avec l'ID={book_id}", success=True)
+                QMessageBox.information(self, "Retour", message)
+                self.update_book_table()
+            else:
+                # Enregistrement de l'erreur dans les logs
+                log_action(f"Erreur lors du retour d'un livre avec l'ID={book_id}: {str(message)}", success=False)
+                QMessageBox.warning(self, "Retour impossible", message)
 
     def remove_book(self):
         book_id = self.entry_remove.text()
-        success, message = self.library.remove_book_by_id(book_id)
-        if success:
-            # Enregistrement de l'action dans les logs
-            log_action(f"Suppression d'un livre avec l'ID={book_id}", success=True)
-            QMessageBox.information(self, "Suppression", message)
-            self.update_book_table()
+        if book_id=='':
+            log_action("Aucune ID de livre n'a été défini !", success=False, error_message="ID non défini")
+            QMessageBox.warning(self, "ID non défini", "Aucune ID de livre n'a été défini !")
+            
         else:
-            # Enregistrement de l'erreur dans les logs
-            log_action(f"Erreur lors de la suppression d'un livre avec l'ID={book_id}: {str(e)}", success=False)
-            QMessageBox.warning(self, "Suppression impossible", message)
+            success, message = self.library.remove_book_by_id(book_id)
+            if success:
+                # Enregistrement de l'action dans les logs
+                log_action(f"Suppression d'un livre avec l'ID={book_id}", success=True)
+                QMessageBox.information(self, "Suppression", message)
+                self.update_book_table()
+            else:
+                # Enregistrement de l'erreur dans les logs
+                log_action(f"Erreur lors de la suppression d'un livre avec l'ID={book_id}: {str(message)}", success=False)
+                QMessageBox.warning(self, "Suppression impossible", message)
     
     def delete_selected_item(self):
         selected_item = self.book_table.currentItem()
@@ -566,11 +584,6 @@ class LibraryApp(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    
-    # Définir les variables d'environnement pour gérer l'échelle des périphériques
-    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"  # Activer le facteur d'échelle par écran contrôlé par le plugin de la plateforme
-    os.environ["QT_SCREEN_SCALE_FACTORS"] = "1"  # Définir les DPI spécifiques pour chaque écran
-    os.environ["QT_SCALE_FACTOR"] = "1"  # Définir le facteur d'échelle global pour l'application
     
     window = LibraryApp()
     window.load_saved_csv()  # Chargement du fichier CSV sauvegardé
