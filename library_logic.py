@@ -63,7 +63,7 @@ class Library:
         for index, existing_book in enumerate(self.books):
             if existing_book.book_id == book.book_id:
                 self.books[index] = book  # Mettre à jour les détails du livre dans la liste
-                log_action(f"Mise à jour des détails du livre : ID={book.book_id}, Titre='{book.title}', Auteur='{book.author}', ISBN='{book.isbn}'", success=True)
+                log_action(f"Mise à jour des détails du livre : ID={book.book_id}, Titre='{book.title}', Auteur='{book.author}', Maison d'édition='{book.publisher}', ISBN='{book.isbn}', Total Copies='{book.total_copies}', Copies Disponibles='{book.available_copies}'", success=True)
                 break  # Sortir de la boucle une fois le livre mis à jour
 
     # Méthode pour afficher les livres en fonction de différents critères de recherche
