@@ -45,4 +45,4 @@ Jobi est une application Python développée avec le framework PyQt5, offrant un
 Les contributions sont les bienvenues ! Pour des suggestions, des problèmes, ou des améliorations, veuillez ouvrir une issue ou une pull request.
 
 ## Licence
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est sous licence GNU General Public License v3.0 - voir le fichier [LICENSE](LICENSE) pour plus de détails.
