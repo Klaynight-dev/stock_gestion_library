@@ -1,3 +1,4 @@
 # requirements.txt
 
-PyQt5==5.15.4
+PyQt5==5.15.6
+reportlab==3.5.68

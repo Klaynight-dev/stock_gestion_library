@@ -1,0 +1,7 @@
+Ajout de livre via ISBN avec tout les champs rempli automatiquement avec un appel API
+
+Séparation de l'action des boutons/barre de recherche en fonction de l'onglet (commencée)
+
+Ajout de champ pour les livres (type de livre(romain, BD...), genre du livre (policier, thriller...))
+
+ 
