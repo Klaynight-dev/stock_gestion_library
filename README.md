@@ -1,48 +1,36 @@
-# Jobi - Système de Gestion de Bibliothèque
+# Gestion de Bibliothèque
 
-## Description
-Jobi est une application Python développée avec le framework PyQt5, offrant une interface utilisateur conviviale pour la gestion des ressources de bibliothèque, y compris les livres, les utilisateurs, et les opérations d'emprunt/retour.
+Ce projet est une application de gestion de bibliothèque réalisée en Python, exploitant la bibliothèque Tkinter pour son interface graphique.
 
 ## Fonctionnalités
-- Gestion des Livres :
-  - Ajouter, éditer et supprimer des livres
-  - Suivre les détails des livres tels que le titre, l'auteur, l'éditeur, l'ISBN, et le nombre d'exemplaires
-  - Rechercher des livres selon divers critères
 
-- Gestion des Utilisateurs :
-  - Fonctionnalités de base pour gérer les utilisateurs (plus de fonctionnalités peuvent être ajoutées)
-
-- Emprunt et Retour :
-  - Emprunter des livres en saisissant l'ID du livre
-  - Retourner des livres en saisissant l'ID du livre
-  - Visualiser et gérer les livres empruntés
-
-- Importation et Exportation :
-  - Importer les données des livres à partir d'un fichier CSV
-  - Exporter les données des livres vers un fichier CSV
-
-- Journalisation :
-  - Enregistrement des actions, des erreurs, et des événements importants pour référence
+- **Ajout de Livres** : Permet d'ajouter de nouveaux livres à la bibliothèque en spécifiant le titre, l'auteur, l'ISBN et le nombre de copies.
+- **Recherche de Livres** : Permet de rechercher des livres par titre, auteur, ISBN ou nombre d'exemplaires disponibles.
+- **Emprunt et Retour de Livres** : Permet aux utilisateurs d'emprunter et de retourner des livres. Les exemplaires disponibles sont automatiquement mis à jour.
+- **Suppression de Livres** : Possibilité de supprimer des livres de la bibliothèque.
+- **Importation/Exportation depuis/vers CSV** : Permet d'importer et d'exporter les données de la bibliothèque au format CSV.
 
 ## Comment Utiliser
-1. Cloner le dépôt : `git clone https://github.com/Klaynight-dev/stock_gestion_library.git`
-2. Installer les dépendances : `pip install -r requirements.txt`
-3. Exécuter l'application : `python main.py`
+
+1. Assurez-vous d'avoir Python installé sur votre système.
+2. Installez les dépendances en exécutant `pip install -r requirements.txt`.
+3. Exécutez le fichier `main.py` pour lancer l'application.
+4. Utilisez l'interface graphique pour ajouter, rechercher, emprunter, retourner ou supprimer des livres.
 
 ## Structure du Projet
-- `main.py` : Point d'entrée principal de l'application
-- `logs.py` : Fonctions de journalisation
-- `library_logic.py` : Logique de gestion de la bibliothèque
-- `dialog_logic.py` : Logique pour les boîtes de dialogue (par exemple, la boîte de dialogue d'ajout de livre)
-- `content/css/style.css` : Feuille de style CSS pour la mise en forme de l'interface graphique
-- `icon.png` : Icône de l'application
-- `data/save/saved_books.csv` : Données de livres sauvegardées au format CSV
+
+- **`gui.py`** : Fichier principal de l'interface graphique de l'application.
+- **`library_logic.py`** : Contient les classes `Library` et `Book` pour la logique de gestion de la bibliothèque.
+- **`logs.py`** : Contient des fonctions utilitaires de log.
 
 ## Contributeurs
-- [Klaynight-dev](https://github.com/Klaynight-dev) - Responsable du développement
+
+- [Klaynight-dev](https://github.com/klaynight-dev) - Responsable du développement
 
 ## Contributions
-Les contributions sont les bienvenues ! Pour des suggestions, des problèmes, ou des améliorations, veuillez ouvrir une issue ou une pull request.
+
+Les contributions sont les bienvenues ! Pour des suggestions, des problèmes ou des améliorations, veuillez ouvrir une issue ou une pull request.
 
 ## Licence
-Ce projet est sous licence GNU General Public License v3.0 - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+Ce projet est sous licence MIT. Veuillez consulter le fichier [LICENSE](Licence) pour plus de détails.
