@@ -27,6 +27,8 @@ from reportlab.lib.pagesizes import letter
 log_action(f"Importation de la biblioteque 'reportlab.lib.pagesizes' avec comme fonction 'letter'", success=True)
 from library_logic import *
 log_action(f"Importation du fichier 'library_logic.py'", success=True)
+from user_logic import *
+log_action(f"Importation du fichier 'user_logic.py'", success=True)
 from dialog_logic import *
 log_action(f"Importation du fichier 'dialog_logic.py'", success=True)
 
@@ -41,13 +43,14 @@ class LibraryApp(QMainWindow):
         # Set window properties
         self.setWindowTitle("Jobi - Gestionnaire de bibliothèque")
         self.setGeometry(100, 100, 800, 500)
+        self.setWindowIcon(QIcon('icon.png'))
 
         # Create a central widget to hold the layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
         # Apply CSS styles to certain components
-        self.setStyleSheet(load_stylesheet('content\css\style.css'))
+        self.setStyleSheet(load_stylesheet('content\\css\\style.css'))
 
         # Create a main layout for the central widget
         self.layout = QVBoxLayout(self.central_widget)
@@ -56,13 +59,9 @@ class LibraryApp(QMainWindow):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         self.file_path = None
-        
         self.file_path_book = None
         self.file_path_user = None
         self.file_path_take = None
-
-        # Set the application icon in the taskbar
-        self.setWindowIcon(QIcon('icon.png'))
 
         # Display the logo in the banner
         self.logo_label = QLabel(self)
@@ -72,49 +71,37 @@ class LibraryApp(QMainWindow):
         self.settings = QSettings("Jobi", "gestion_library_app")
 
         self.library = Library()
+        self.user_gestion = User_gestion()
 
         # Create a tab widget without specifying geometry
         self.tab_widget = QTabWidget(self.central_widget)
-
-        # Set the size policy to Expanding
         self.tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Books Tab
         self.books_tab = QWidget()
-
-        # Set up the book management components in the books tab
         books_layout = QVBoxLayout()
-
         self.setup_search_section()
-        self.setup_book_table()
-
+        self.setup_table("book_table",7,["ID", "Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Disponibles"])
         self.book_table.itemChanged.connect(self.update_book_info)
-
         books_layout.addWidget(self.book_table)
-
-        # Add more book management-related components if needed
-
         self.books_tab.setLayout(books_layout)
         self.tab_widget.addTab(self.books_tab, "Gestion des Livres")
 
         # Users Tab
         self.users_tab = QWidget()
         user_layout = QVBoxLayout()
-
-        # Add user-specific widgets and functionality here
         self.setup_user_tab()
+        self.user_table.itemChanged.connect(self.update_user_info)
         self.users_tab.setLayout(user_layout)
         self.tab_widget.addTab(self.users_tab, "Gestion des Utilisateurs")
-        
-        # Users Tab
+
+        # Take Tab
         self.take_tab = QWidget()
         take_layout = QVBoxLayout()
-
-        # Add user-specific widgets and functionality here
         self.setup_take_tab()
         self.take_tab.setLayout(take_layout)
         self.tab_widget.addTab(self.take_tab, "Gestion des Empreints")
-        
+
         # Set up stretch factors to prioritize the content in the layout
         self.layout.addWidget(self.tab_widget, stretch=1)
 
@@ -126,14 +113,20 @@ class LibraryApp(QMainWindow):
 
         # Initialize bottom_layout as an instance attribute
         self.bottom_layout = None
-        
+
         self.tab_widget.currentChanged.connect(self.onTabChanged)
-        
+
         self.create_menu()
         
-        #Zone de text pour n'import quelle fonctionnalisté
+         #Zone de text pour n'import quelle fonctionnalisté
 #         self.text_browser = QTextBrowser(self)
 #         books_layout.addWidget(self.text_browser)
+    
+    def toggle_fullscreen(self):
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
     
     def create_menu(self):
         # Menu Fichier
@@ -177,7 +170,17 @@ class LibraryApp(QMainWindow):
         quit_action.triggered.connect(self.close)
         log_action("Fermeture de l'application depuis le menu fichier")
         file_menu.addAction(quit_action)
-
+        
+        
+        # Menu Option
+        file_menu = self.menuBar().addMenu("Option")
+        
+        fullscreen = QAction(QIcon(), "Pleine écran", self)
+        fullscreen.setShortcut("F11")
+        fullscreen.triggered.connect(self.toggle_fullscreen)
+        log_action("Mise en pleine écrant/Mise en fenétré")
+        file_menu.addAction(fullscreen)
+        
         # Menu Édition
 #         edit_menu = self.menuBar().addMenu("Édition")
 # 
@@ -274,7 +277,7 @@ class LibraryApp(QMainWindow):
             new_text = 'Ajouter un emprunt'
             self.btn_open_add_book_dialog.setText(new_text)
             log_action('Changement d\'onglet vers \'Ajouter un emprunt\'', success=True)
-            self.setWindowTitle(f"Jobi - {self.file_path_user if self.file_path_user!=None else 'Gestionnaire de bibliothèque'}")
+            self.setWindowTitle(f"Jobi - {self.file_path_take if self.file_path_take!=None else 'Gestionnaire de bibliothèque'}")
             log_action(f"Changement du Windows Title par 'Jobi - {self.file_path_take if self.file_path_take!=None else 'Gestionnaire de bibliothèque'}'")
             
     def closeEvent(self, event):
@@ -328,62 +331,36 @@ class LibraryApp(QMainWindow):
         search_layout.addWidget(self.search_combobox)
 
         self.layout.addLayout(search_layout)
+        
+    def setup_table(self, val_name, colomn_nbr, colomn_names):
+        # Utilisez setattr pour créer dynamiquement un attribut d'instance avec le nom spécifié
+        setattr(self, val_name, QTreeWidget())
 
-    def setup_book_table(self):
-        self.book_table = QTreeWidget()
-        self.book_table.setColumnCount(7)  # Il y a 7 colonnes dans votre cas
-        self.book_table.setHeaderLabels(["ID", "Titre", "Auteur", "Maison d'édition", "ISBN", "Exemplaires", "Exemplaires Disponibles"])
-        header = self.book_table.header()
+        # Utilisez l'attribut d'instance pour accéder à votre QTreeWidget
+        getattr(self, val_name).setColumnCount(colomn_nbr)
+        getattr(self, val_name).setHeaderLabels(colomn_names)
+#         getattr(self, val_name).setSortingEnabled(True) # A resoudre pour eviter le mauvais rangement 
+
+        header = getattr(self, val_name).header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.layout.addWidget(self.book_table)
+
+        # Ajoutez le QTreeWidget au layout de votre classe
+        self.layout.addWidget(getattr(self, val_name))
 
         # Rendre tous les éléments éditables dans le tableau
-        self.book_table.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
-        
-        # Activer la détection du clic droit pour le menu contextuel
-        self.book_table.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.book_table.customContextMenuRequested.connect(self.show_context_menu)
-        
-        # Détection du double-clic sur l'en-tête de colonne pour le renommage
-        header = self.book_table.header()
-        header.sectionDoubleClicked.connect(self.rename_column)
-        
-    def setup_books_tab(self):
-        # Set up the book management components in the books tab
-        books_layout = QVBoxLayout()
-
-        # Set up the book management table and related components in the books tab
-        self.setup_search_section()
-        self.setup_book_table()
-        self.setup_borrow_return_remove_sections()
-        self.setup_import_export_buttons()
-        self.book_table.itemChanged.connect(self.update_book_info)
-
-        books_layout.addWidget(self.book_table)
-
-        self.books_tab.setLayout(books_layout)
-
-    def setup_user_table(self):
-        self.user_table = QTreeWidget()
-        self.user_table.setColumnCount(3)  # Adjust the number of columns as needed
-        self.user_table.setHeaderLabels(["ID", "Nom", "Prénom", "Email", "Addresse", "Nombre d'Empreint"])
-        header = self.user_table.header()
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.layout.addWidget(self.user_table)
-
-        # Rendre tous les éléments éditables dans le tableau
-        self.user_table.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
+        getattr(self, val_name).setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
 
         # Activer la détection du clic droit pour le menu contextuel
-        self.user_table.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.user_table.customContextMenuRequested.connect(self.show_user_context_menu)
+        getattr(self, val_name).setContextMenuPolicy(Qt.CustomContextMenu)
+        getattr(self, val_name).customContextMenuRequested.connect(self.show_user_context_menu)
+        
 
     def setup_user_tab(self):
         # Set up the user management components in the users tab
         user_layout = QVBoxLayout()
 
         # Set up the user management table and related components in the users tab
-        self.setup_user_table()
+        self.setup_table("user_table", 6,["ID", "Nom", "Prénom", "Email", "Addresse", "Nombre d'Empreint"])
         self.user_table.itemChanged.connect(self.update_user_info)
 
         user_layout.addWidget(self.user_table)
@@ -405,7 +382,7 @@ class LibraryApp(QMainWindow):
         elif action == modify_action:
             selected_item = self.user_table.currentItem()
             if selected_item is not None:
-                self.edit_user_cell(selected_item)
+                self.edit_cell(selected_item)
         elif action == delete_action:
             selected_item = self.user_table.currentItem()
             if selected_item is not None:
@@ -417,7 +394,7 @@ class LibraryApp(QMainWindow):
             selected_items = self.user_table.selectedItems()
             for item in selected_items:
                 user_id = int(item.text(0))
-                user = self.library.get_user_by_id(user_id)
+                user = self.user_gestion.get_user_by_id(user_id)
 
                 column = self.user_table.currentColumn()
                 column_name = self.user_table.headerItem().text(column)  # Récupération du nom de la colonne
@@ -512,14 +489,6 @@ class LibraryApp(QMainWindow):
             # Enregistrement de l'erreur dans les logs
             log_action(f"Erreur lors de la mise à jour des détails de l'empreint : {str(e)}", success=False)
             print("Une erreur s'est produite :", e)
-    
-    def edit_take_cell(self, item):
-        current_column = self.take_table.currentColumn()
-        self.take_table.editItem(item, current_column)
-    
-    def edit_user_cell(self, item):
-        current_column = self.user_table.currentColumn()
-        self.user_table.editItem(item, current_column)
     
     def setup_borrow_return_remove_sections(self):
         # Add the borrow/return/remove sections directly to the main layout
@@ -712,6 +681,23 @@ class LibraryApp(QMainWindow):
             # Rendre tous les éléments de cet item éditables
             for column in range(self.book_table.columnCount()):
                 item.setFlags(item.flags() | Qt.ItemIsEditable)
+    
+    def update_user_table(self, users=None):
+        self.user_table.clear()
+        if not users:
+            users = self.user_gestion.display_users()
+
+        for user in users:
+            item = QTreeWidgetItem(self.user_table)
+            item.setText(0, str(user.user_id))
+            item.setText(1, user.fname)
+            item.setText(2, user.name)
+            item.setText(3, str(user.mail))
+            item.setText(4, user.take)
+
+            # Rendre tous les éléments de cet item éditables
+            for column in range(self.user_table.columnCount()):
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
 
     def take_book(self):
         current_tab_index = self.tab_widget.currentIndex()
@@ -828,12 +814,12 @@ class LibraryApp(QMainWindow):
                 self.file_path_user = file_path
                 log_action(f"Modification de la banniere superieur par : {file_path}", success=False)
                 if file_path:
-                    success = self.library.import_from_csv(file_path)
+                    success = self.user_gestion.import_from_csv(file_path)
                     if success:
                         # Enregistrement de l'action dans les logs
                         log_action("Importation réussie depuis un fichier CSV", success=True)
-                        QMessageBox.information(self, "Importation réussie", "Les livres ont été importés avec succès depuis le fichier CSV.")
-                        self.update_book_table()
+                        QMessageBox.information(self, "Importation réussie", "Les utilisateurs ont été importés avec succès depuis le fichier CSV.")
+                        self.update_user_table()
                     else:
                         # Enregistrement de l'erreur dans les logs
                         log_action("Erreur lors de l'importation depuis un fichier CSV", success=False)
@@ -846,23 +832,34 @@ class LibraryApp(QMainWindow):
                     
     def export_to_csv(self):
         current_tab_index = self.tab_widget.currentIndex()
-        if current_tab_index == 0:
-            try:
+
+        try:
+            if current_tab_index == 0:  # Export books
                 file_path, _ = QFileDialog.getSaveFileName(self, "Enregistrer le fichier CSV", "", "CSV Files (*.csv)")
                 if file_path:
                     with open(file_path, 'w', newline='', encoding='utf-8') as file:
                         writer = csv.writer(file)
                         writer.writerow(['Title', 'Author', 'Publisher', 'ISBN', 'Total Copies'])
                         for book in self.library.display_books():
-                            writer.writerow([book.title, book.author, book.isbn, book.available_copies])
-                    # Enregistrement de l'action dans les logs
-                    log_action("Exportation réussie vers un fichier CSV", success=True)
-                    QMessageBox.information(self, "Exportation réussie", "Les données ont été exportées avec succès vers un fichier CSV.")
-            except Exception as e:
-                # Enregistrement de l'erreur dans les logs
-                log_action(f"Erreur lors de l'exportation vers un fichier CSV : {str(e)}", success=False)
-                # Gérer l'erreur (affichage d'un message à l'utilisateur ou autre)
-                QMessageBox.critical(self, "Erreur d'exportation", f"Une erreur est survenue lors de l'exportation : {str(e)}")
+                            writer.writerow([book.title, book.author, book.publisher, book.isbn, book.available_copies])
+                    log_action("Exportation réussie des livres vers un fichier CSV", success=True)
+                    QMessageBox.information(self, "Exportation réussie", "Les données des livres ont été exportées avec succès vers un fichier CSV.")
+                    
+            elif current_tab_index == 1:  # Export users
+                file_path, _ = QFileDialog.getSaveFileName(self, "Enregistrer le fichier CSV", "", "CSV Files (*.csv)")
+                if file_path:
+                    with open(file_path, 'w', newline='', encoding='utf-8') as file:
+                        writer = csv.writer(file)
+                        writer.writerow(['Fname', 'Name', 'Email', 'Address', 'Empreint'])
+                        for user in self.user_gestion.display_users():
+                            writer.writerow([user.fname, user.name, user.mail, user.address, user.take])
+                    log_action("Exportation réussie des utilisateurs vers un fichier CSV", success=True)
+                    QMessageBox.information(self, "Exportation réussie", "Les données des utilisateurs ont été exportées avec succès vers un fichier CSV.")
+
+        except Exception as e:
+            log_action(f"Erreur lors de l'exportation vers un fichier CSV : {str(e)}", success=False)
+            QMessageBox.critical(self, "Erreur d'exportation", f"Une erreur est survenue lors de l'exportation : {str(e)}")
+
         
     def export_save_to_csv(self, file_path, books):
         current_tab_index = self.tab_widget.currentIndex()
@@ -910,9 +907,18 @@ class LibraryApp(QMainWindow):
     
     # Fonction pour éditer une cellule lors du double-clic
     def edit_cell(self, item):
-        current_column = self.book_table.currentColumn()
-        self.book_table.editItem(item, current_column)
-
+        current_tab_index = self.tab_widget.currentIndex()
+        if current_tab_index==0:
+            current_column = self.book_table.currentColumn()
+            self.book_table.editItem(item, current_column)
+            
+        if current_tab_index==1:
+            current_column = self.user_table.currentColumn()
+            self.user_table.editItem(item, current_column)
+            
+        if current_tab_index==2:
+            current_column = self.take_table.currentColumn()
+            self.take_table.editItem(item, current_column)
         
     def rename_column(self, column):
         new_name, ok = QInputDialog.getText(self, "Renommer la colonne", f"Entrez un nouveau nom pour la colonne {column + 1}")

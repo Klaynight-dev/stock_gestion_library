@@ -1,16 +1,17 @@
-# library_logic.py
+# user_logic.py
 
 import csv
 import uuid  # Importer le module uuid
 from logs import *
 
-class user:
-    def __init__(self, user_id, username, name, email, empreint=0):
+class User:
+    def __init__(self, user_id, username, name, email, empreint=0, address=""):
         self.user_id = user_id
         self.fname = username
         self.name = name
         self.mail = email
         self.take = empreint
+        self.address = address
 
 class User_gestion:
     def __init__(self):
@@ -33,19 +34,20 @@ class User_gestion:
                 break  # Sortir de la boucle une fois le utilisateur mis à jour
 
     # Méthode pour afficher les utilisateurs en fonction de différents critères de recherche
-    def display_users(self, query=None, by_isbn=False, by_author=False, by_title=False, by_copies=False, by_publisher=False):
+    def display_users(self, query=None, by_fname=False, by_name=False, by_mail=False, by_address=False, by_take=False):
         if query:
             filtered_users = []
             for user in self.users:
-                if (by_isbn and query.lower() in user.isbn.lower()) or \
-                   (by_author and query.lower() in user.author.lower()) or \
-                   (by_title and query.lower() in user.title.lower()) or \
-                   (by_copies and query.lower() in str(user.available_copies).lower()) or \
-                   (by_publisher and query.lower() in user.publisher.lower()):  # Recherche par Publisher
+                if (by_fname and query.lower() in user.fname.lower()) or \
+                   (by_name and query.lower() in user.name.lower()) or \
+                   (by_mail and query.lower() in user.mail.lower()) or \
+                   (by_address and query.lower() in user.address.lower()) or \
+                   (by_take and query.lower() in str(user.take).lower()):
                     filtered_users.append(user)
             return filtered_users
         else:
             return self.users
+
 
     # Méthode pour importer des utilisateurs à partir d'un fichier CSV
     def import_from_csv(self, file_path):
@@ -56,23 +58,21 @@ class User_gestion:
                 max_user_id = max([user.user_id for user in self.users], default=0)
 
                 for row in csv_reader:
-                    max_user_id += 1  # Incrémenter l'ID pour le nouveau utilisateur
-                    user = user(
+                    max_user_id += 1
+                    user = User(
                         max_user_id,
-                        row['Title'],
-                        row['Author'],
-                        row['Publisher'],
-                        row['ISBN'],
-                        int(row['Total Copies']),
-                        int(row['Total Copies'])  # Disponibilité initiale égale au nombre total de copies
+                        row['Fname'],
+                        row['Name'],
+                        row['Email'],
+                        row.get('Address', ''),  # Adjusted to reflect the new column order
+                        int(row['Empreint'])
                     )
                     users_to_add.append(user)
-                    log_action(f"Ajout d'un utilisateur : ID={max_user_id}, Titre='{row['Title']}', Auteur='{row['Author']}', Publisher='{row['Publisher']}', ISBN='{row['ISBN']}', max_copies='{int(row['Total Copies'])}', copie_dispo='{int(row['Total Copies'])}'", success=True)
+                    log_action(f"Ajout d'un utilisateur : ID={max_user_id}, First Name='{row['Fname']}', Name='{row['Name']}', Email='{row['Email']}', Address='{row.get('Address', '')}', Nombre d'empreint='{int(row['Empreint'])}'", success=True)
 
                 self.add_multiple(users_to_add)
-                # Enregistrement de l'action dans les logs
                 log_action(f"Importation réussie à partir de {file_path}", success=True)
-                return True  # Indiquer que l'importation s'est déroulée avec succès
+                return True
         except Exception as e:
             log_action(f"Erreur lors de l'importation depuis {file_path}: {str(e)}", success=False)
             print(f"Erreur lors de l'importation : {str(e)}")
@@ -85,4 +85,5 @@ class User_gestion:
                 return user
         log_action(f"Aucun utilisateur trouvé avec l'ID={user_id}", success=False)
         return None  # Si aucun utilisateur correspondant à l'ID n'est trouvé
+
 
