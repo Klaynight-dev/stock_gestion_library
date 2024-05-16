@@ -11,7 +11,7 @@ def create_log_directory():
 def get_log_filename():
     now = datetime.now()
     log_directory = 'data/logs/'
-    return f"{log_directory}{now.strftime('%Y-%m-%d_%H')}.log"
+    return f"{log_directory}{now.strftime('%Y-%m-%d_%H')}_log.txt"
 
 def log_action(action, success=True, error_message=None):
     log_filename = get_log_filename()
@@ -22,4 +22,3 @@ def log_action(action, success=True, error_message=None):
         if not success and error_message:
             log_file.write(f"Error: {error_message}\n")
         log_file.write("\n")
-
