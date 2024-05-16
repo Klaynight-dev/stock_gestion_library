@@ -67,22 +67,19 @@ class Library:
                 break  # Sortir de la boucle une fois le livre mis à jour
 
     # Méthode pour afficher les livres en fonction de différents critères de recherche
-    def display_books(self, query=None, by_isbn=False, by_author=False, by_title=False, by_total_copies=False, by_available_copies=False, by_publisher=False, by_ID=False):
+    def display_books(self, query=None, by_isbn=False, by_author=False, by_title=False, by_copies=False, by_publisher=False):
         if query:
             filtered_books = []
             for book in self.books:
                 if (by_isbn and query.lower() in book.isbn.lower()) or \
                    (by_author and query.lower() in book.author.lower()) or \
                    (by_title and query.lower() in book.title.lower()) or \
-                   (by_available_copies and query.lower() in str(book.available_copies).lower()) or \
-                   (by_publisher and query.lower() in book.publisher.lower()) or \
-                   (by_total_copies and query.lower() in str(book.total_copies).lower()) or \
-                   (by_ID and query.lower() in str(book.book_id).lower()):
+                   (by_copies and query.lower() in str(book.available_copies).lower()) or \
+                   (by_publisher and query.lower() in book.publisher.lower()):  # Recherche par Publisher
                     filtered_books.append(book)
             return filtered_books
         else:
             return self.books
-
 
     # Méthode pour importer des livres à partir d'un fichier CSV
     def import_from_csv(self, file_path):
@@ -118,7 +115,7 @@ class Library:
     # Méthode pour obtenir un livre par son ID
     def get_book_by_id(self, book_id):
         for book in self.books:
-            if book.book_id == int(book_id):
+            if book.book_id == book_id:
                 return book
         log_action(f"Aucun livre trouvé avec l'ID={book_id}", success=False)
         return None  # Si aucun livre correspondant à l'ID n'est trouvé
