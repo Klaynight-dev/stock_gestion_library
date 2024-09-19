@@ -33,4 +33,4 @@ Les contributions sont les bienvenues ! Pour des suggestions, des problèmes ou 
 
 ## Licence
 
-Ce projet est sous licence GPL-3. Veuillez consulter le fichier [LICENSE](Licence) pour plus de détails.
+Ce projet est sous licence MIT. Veuillez consulter le fichier [LICENSE](Licence) pour plus de détails.
