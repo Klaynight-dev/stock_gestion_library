@@ -2,7 +2,7 @@
 
 import csv
 import uuid  # Importer le module uuid
-from logs import *
+from tools.logs import *
 
 class User:
     def __init__(self, user_id, username, name, email, empreint=0, address=""):
