@@ -1,4 +1,4 @@
-from logs import *
+from tools.logs import *
 from PyQt5.QtWidgets import QAction, QMenuBar
 from PyQt5.QtGui import QIcon
 
