@@ -1,6 +1,6 @@
 # main.py
 
-from logs import *
+from tools.logs import *
 create_log_directory()
 log_action(f"Importation du fichier 'logs.py'", success=True)
 import sys
@@ -26,11 +26,11 @@ from reportlab.pdfgen import canvas
 log_action(f"Importation de la biblioteque 'reportlab.pdfgen' avec comme fonction 'canvas'", success=True)
 from reportlab.lib.pagesizes import letter
 log_action(f"Importation de la biblioteque 'reportlab.lib.pagesizes' avec comme fonction 'letter'", success=True)
-from library_logic import *
+from tools.library_logic import *
 log_action(f"Importation du fichier 'library_logic.py'", success=True)
-from user_logic import *
+from tools.user_logic import *
 log_action(f"Importation du fichier 'user_logic.py'", success=True)
-from dialog_logic import *
+from tools.dialog_logic import *
 log_action(f"Importation du fichier 'dialog_logic.py'", success=True)
 
 
