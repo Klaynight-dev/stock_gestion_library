@@ -18,6 +18,7 @@ Ce projet est une application de gestion de bibliothèque réalisée en Python, 
 4. Utilisez l'interface graphique pour ajouter, rechercher, emprunter, retourner ou supprimer des livres.
 
 ## Structure du Projet
+### _A refaire_
 
 - **`gui.py`** : Fichier principal de l'interface graphique de l'application.
 - **`library_logic.py`** : Contient les classes `Library` et `Book` pour la logique de gestion de la bibliothèque.
