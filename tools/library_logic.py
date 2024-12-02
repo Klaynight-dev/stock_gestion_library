@@ -2,7 +2,7 @@
 
 import csv
 import uuid  # Importer le module uuid
-from logs import *
+from tools.logs import *
 
 class Book:
     def __init__(self, book_id, title, author, publisher, isbn, total_copies, available_copies):
