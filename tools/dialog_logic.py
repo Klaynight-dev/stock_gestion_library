@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout,
     QHBoxLayout, QWidget, QComboBox, QMessageBox, QFileDialog, QTreeWidget,
     QTreeWidgetItem, QTableWidgetItem, QHeaderView, QDialog, QAbstractItemView, QMenu, QCheckBox, QInputDialog)
-from logs import *
-from library_logic import *
+from tools.logs import *
+from tools.library_logic import *
 
 class AddBookDialog(QDialog):
     def __init__(self, parent=None):
